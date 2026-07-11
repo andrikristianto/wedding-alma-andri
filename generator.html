@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Generator Link Undangan — Alma & Andri</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --cream:#F5F1E9;
+    --ink:#1B1815;
+    --clay:#B97A56;
+    --line: rgba(27,24,21,0.15);
+  }
+  *{box-sizing:border-box;}
+  body{
+    font-family:'Jost', sans-serif;
+    background:var(--cream);
+    color:var(--ink);
+    max-width:720px;
+    margin:0 auto;
+    padding:28px 20px 60px;
+  }
+  h1{
+    font-family:'Cormorant Garamond', serif;
+    font-size:28px;
+    margin-bottom:6px;
+  }
+  p.sub{ font-size:13px; opacity:.7; margin-bottom:24px; line-height:1.6; }
+  label{ font-size:12px; text-transform:uppercase; letter-spacing:.1em; opacity:.7; display:block; margin-bottom:8px; }
+  textarea, input{
+    width:100%;
+    font-family:inherit;
+    font-size:14px;
+    padding:12px;
+    border:1px solid var(--line);
+    border-radius:6px;
+    background:#fff;
+    margin-bottom:18px;
+  }
+  textarea{ min-height:140px; resize:vertical; }
+  button{
+    font-family:inherit;
+    background:var(--ink);
+    color:var(--cream);
+    border:none;
+    padding:12px 22px;
+    border-radius:999px;
+    font-size:13px;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+    cursor:pointer;
+    margin-bottom:30px;
+  }
+  button:active{ opacity:.85; }
+  table{
+    width:100%;
+    border-collapse:collapse;
+    font-size:13px;
+    margin-bottom:24px;
+    background:#fff;
+  }
+  th, td{
+    text-align:left;
+    padding:9px 10px;
+    border-bottom:1px solid var(--line);
+    word-break:break-all;
+  }
+  th{ font-size:11px; text-transform:uppercase; letter-spacing:.06em; opacity:.6; }
+  .copy-btn{
+    background:none;
+    border:1px solid var(--line);
+    color:var(--ink);
+    padding:4px 10px;
+    border-radius:999px;
+    font-size:11px;
+    text-transform:none;
+    letter-spacing:0;
+  }
+  .block-label{
+    font-size:12px;
+    text-transform:uppercase;
+    letter-spacing:.1em;
+    opacity:.7;
+    margin-bottom:8px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+  }
+  pre{
+    background:#fff;
+    border:1px solid var(--line);
+    border-radius:6px;
+    padding:14px;
+    font-size:12px;
+    white-space:pre-wrap;
+    word-break:break-all;
+    margin-bottom:10px;
+  }
+  .hint{ font-size:12px; opacity:.65; line-height:1.6; margin-bottom:28px; }
+  .field-row{ display:flex; gap:10px; align-items:flex-end; }
+  .field-row > div{ flex:1; }
+</style>
+</head>
+<body>
+
+  <h1>Generator Link Undangan</h1>
+  <p class="sub">Tempel daftar nama tamu (satu nama per baris), lalu klik Generate. Kamu akan dapat: (1) kode unik + link siap kirim per tamu, dan (2) baris siap tempel ke Google Sheet kamu.</p>
+
+  <div class="field-row">
+    <div>
+      <label for="baseUrl">Alamat website undangan kamu (setelah di-deploy)</label>
+      <input id="baseUrl" type="text" placeholder="https://nama-domain-kamu.com/">
+    </div>
+  </div>
+
+  <label for="names">Daftar nama tamu</label>
+  <textarea id="names" placeholder="Budi Santoso
+Siti Aminah
+Keluarga Bapak Hendra
+..."></textarea>
+
+  <button id="genBtn">Generate</button>
+
+  <div id="results" style="display:none;">
+    <div class="block-label">
+      <span>Link siap kirim per tamu</span>
+      <button class="copy-btn" id="copyLinksBtn">Copy semua</button>
+    </div>
+    <table>
+      <thead><tr><th>Nama</th><th>Link</th></tr></thead>
+      <tbody id="linksTable"></tbody>
+    </table>
+
+    <div class="block-label">
+      <span>Siap tempel ke Google Sheet (kolom: code, name)</span>
+      <button class="copy-btn" id="copySheetBtn">Copy</button>
+    </div>
+    <pre id="sheetOutput"></pre>
+    <p class="hint">
+      Cara pakai: buka Google Sheet kamu → pastikan kolom A = <b>code</b>, kolom B = <b>name</b> →
+      tempel hasil di atas mulai baris ke-2 (di bawah header) → File → Share → Publish to web →
+      pilih sheet ini → format CSV → copy link-nya → tempel ke <code>CONFIG.SHEET_CSV_URL</code> di file index.html.
+    </p>
+  </div>
+
+<script>
+function slugify(name){
+  return name
+    .toLowerCase()
+    .trim()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+    .replace(/[^a-z0-9\s-]/g,'')
+    .replace(/\s+/g,'-')
+    .replace(/-+/g,'-');
+}
+
+function randomSuffix(){
+  return Math.random().toString(36).substring(2,5);
+}
+
+document.getElementById('genBtn').addEventListener('click', ()=>{
+  const raw = document.getElementById('names').value;
+  const baseUrlInput = document.getElementById('baseUrl').value.trim();
+  const baseUrl = baseUrlInput ? (baseUrlInput.endsWith('/') ? baseUrlInput : baseUrlInput + '/') : 'https://nama-domain-kamu.com/';
+
+  const names = raw.split(/\r?\n/).map(n=>n.trim()).filter(Boolean);
+  if(!names.length) return;
+
+  const usedCodes = new Set();
+  const rows = names.map(name=>{
+    let code = slugify(name);
+    if(!code) code = 'tamu';
+    while(usedCodes.has(code)){
+      code = slugify(name) + '-' + randomSuffix();
+    }
+    usedCodes.add(code);
+    const link = `${baseUrl}?to=${code}`;
+    return { name, code, link };
+  });
+
+  const linksTable = document.getElementById('linksTable');
+  linksTable.innerHTML = rows.map(r=>
+    `<tr><td>${r.name}</td><td>${r.link}</td></tr>`
+  ).join('');
+
+  const sheetOutput = document.getElementById('sheetOutput');
+  const sheetText = rows.map(r=>`${r.code},${r.name}`).join('\n');
+  sheetOutput.textContent = sheetText;
+
+  document.getElementById('results').style.display = 'block';
+
+  window._allLinks = rows.map(r=>`${r.name}: ${r.link}`).join('\n');
+  window._sheetText = sheetText;
+});
+
+document.getElementById('copyLinksBtn').addEventListener('click', ()=>{
+  navigator.clipboard.writeText(window._allLinks || '');
+});
+document.getElementById('copySheetBtn').addEventListener('click', ()=>{
+  navigator.clipboard.writeText(window._sheetText || '');
+});
+</script>
+</body>
+</html>
