@@ -159,11 +159,13 @@
     position:static;
   }
   .countdown-fallback-bg .countdown-overlay{ position:static; }
-.maps-btn-wrap{
+.akad-wrap{ position:relative; }
+  .maps-btn-wrap{
+    position:absolute;
+    left:0; right:0;
+    bottom: 20px;
     display:flex;
     justify-content:center;
-    padding: 18px 24px 30px;
-    background: var(--cream);
   }
   .maps-btn{
     display:inline-flex;
@@ -289,7 +291,7 @@
         <div class="cd-box"><span id="cd-mins">00</span><label>Menit</label></div>
         <div class="cd-box"><span id="cd-secs">00</span><label>Detik</label></div>
       </div>
-      <button class="remind-btn" id="remindBtn">Ingatkan Saya</button>
+      <a class="remind-btn" id="remindBtn" href="#" target="_blank" rel="noopener">Ingatkan Saya</a>
     </div>
   </section>
 
@@ -297,17 +299,20 @@
        5) AKAD NIKAH + LOKASI — semua teks & foto sudah jadi satu
        banner. Ganti: images/akad-banner.jpg
        ============================================================ -->
-  <div class="banner-slot reveal">
-    <img src="images/akad-banner.jpg" alt="Akad Nikah Alma & Andri">
-  </div>
-   <div class="maps-btn-wrap reveal">
-    <a class="maps-btn" id="mapsBtn" href="#" target="_blank" rel="noopener">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M12 2C7.86 2 4.5 5.36 4.5 9.5C4.5 15.15 12 22 12 22C12 22 19.5 15.15 19.5 9.5C19.5 5.36 16.14 2 12 2Z" fill="#C0442E"/>
-        <circle cx="12" cy="9.5" r="3" fill="#FFFFFF"/>
-      </svg>
-      <span>Maps Lokasi Akad</span>
-    </a>
+  <div class="akad-wrap reveal">
+    <div class="banner-slot">
+      <img src="images/akad-banner.jpg" alt="Akad Nikah Alma & Andri">
+    </div>
+
+    <div class="maps-btn-wrap">
+      <a class="maps-btn" id="mapsBtn" href="#" target="_blank" rel="noopener">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 2C7.86 2 4.5 5.36 4.5 9.5C4.5 15.15 12 22 12 22C12 22 19.5 15.15 19.5 9.5C19.5 5.36 16.14 2 12 2Z" fill="#C0442E"/>
+          <circle cx="12" cy="9.5" r="3" fill="#FFFFFF"/>
+        </svg>
+        <span>Maps Lokasi Akad</span>
+      </a>
+    </div>
   </div>
 
   <!-- ============================================================
@@ -458,45 +463,21 @@ updateCountdown();
 setInterval(updateCountdown, 1000);
 
 /* ============================================================
-   5) INGATKAN SAYA -> Google Calendar
+   5) INGATKAN SAYA -> Google Calendar (link langsung, tanpa download)
    ============================================================ */
-function toICSFormat(date){
+function toGCalFormat(date){
   return date.toISOString().replace(/[-:]/g,'').split('.')[0] + 'Z';
 }
-function escapeICSText(text){
-  return text.replace(/\\/g,'\\\\').replace(/;/g,'\\;').replace(/,/g,'\\,').replace(/\n/g,'\\n');
-}
-document.getElementById('remindBtn').addEventListener('click', ()=>{
-  const start = new Date(CONFIG.EVENT_DATE_ISO);
-  const end = new Date(start.getTime() + CONFIG.EVENT_DURATION_HOURS*60*60*1000);
-
-  const icsLines = [
-    'BEGIN:VCALENDAR',
-    'VERSION:2.0',
-    'PRODID:-//Alma Andri Wedding//ID',
-    'CALSCALE:GREGORIAN',
-    'METHOD:PUBLISH',
-    'BEGIN:VEVENT',
-    'UID:' + Date.now() + '-alma-andri-wedding',
-    'DTSTAMP:' + toICSFormat(new Date()),
-    'DTSTART:' + toICSFormat(start),
-    'DTEND:' + toICSFormat(end),
-    'SUMMARY:' + escapeICSText(CONFIG.CALENDAR_TITLE),
-    'LOCATION:' + escapeICSText(CONFIG.CALENDAR_LOCATION),
-    'DESCRIPTION:' + escapeICSText(CONFIG.CALENDAR_DETAILS),
-    'END:VEVENT',
-    'END:VCALENDAR'
-  ];
-  const icsContent = icsLines.join('\r\n');
-
-  const dataUri = 'data:text/calendar;charset=utf-8,' + encodeURIComponent(icsContent);
-  const link = document.createElement('a');
-  link.href = dataUri;
-  link.download = 'akad-nikah-alma-andri.ics';
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-});
+const gcalStart = new Date(CONFIG.EVENT_DATE_ISO);
+const gcalEnd = new Date(gcalStart.getTime() + CONFIG.EVENT_DURATION_HOURS*60*60*1000);
+const gcalUrl = new URL('https://calendar.google.com/calendar/render');
+gcalUrl.searchParams.set('action','TEMPLATE');
+gcalUrl.searchParams.set('text', CONFIG.CALENDAR_TITLE);
+gcalUrl.searchParams.set('dates', `${toGCalFormat(gcalStart)}/${toGCalFormat(gcalEnd)}`);
+gcalUrl.searchParams.set('details', CONFIG.CALENDAR_DETAILS);
+gcalUrl.searchParams.set('location', CONFIG.CALENDAR_LOCATION);
+gcalUrl.searchParams.set('ctz', 'Asia/Jakarta');
+document.getElementById('remindBtn').href = gcalUrl.toString();
 
 /* ============================================================
    6) GALLERY + LIGHTBOX (swipeable, tanpa perlu klik close)
