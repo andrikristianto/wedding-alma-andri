@@ -75,6 +75,40 @@
     gap:28px;
     padding: 24px 24px 20px;
   }
+  .couple-section{ position:relative; }
+  .tabs-bar.floating-tabs{
+    position:absolute;
+    top:18px;
+    left:0; right:0;
+    z-index:5;
+    display:flex;
+    justify-content:center;
+    gap:6px;
+    padding:0;
+  }
+  .tabs-bar.floating-tabs .tab{
+    background: rgba(255,255,255,.85);
+    backdrop-filter: blur(4px);
+    padding: 8px 22px 7px;
+    border-radius: 999px;
+    font-size:17px;
+    color: rgba(27,24,21,.55);
+    box-shadow: 0 3px 10px rgba(0,0,0,.12);
+  }
+  .tabs-bar.floating-tabs .tab.active{
+    background: var(--white);
+    color: var(--ink);
+    font-weight:600;
+  }
+  .tabs-bar.floating-tabs .tab.active::after{ display:none; }
+
+  @keyframes tabsAttentionPulse{
+    0%, 100% { box-shadow: 0 3px 10px rgba(0,0,0,.12), 0 0 0 0 rgba(201,168,118,.5); }
+    50% { box-shadow: 0 3px 10px rgba(0,0,0,.12), 0 0 0 7px rgba(201,168,118,0); }
+  }
+  .tabs-bar.floating-tabs.attention .tab{
+    animation: tabsAttentionPulse 1.6s ease-out 4;
+  }
   .tab{
     font-family: var(--font-display);
     font-size:24px;
@@ -184,13 +218,21 @@
   /* ============================================================
      6) GALLERY / COLLAGE — tetap foto individual (bukan banner)
      ============================================================ */
-  .gallery-section{ padding: 40px 0; }
+.gallery-section{ padding: 16px 0 0; }
+  .gallery-hero-wrap{ position:relative; }
   .gallery-heading{
     text-align:center;
     font-family: var(--font-display);
     font-style:italic;
     font-size:22px;
-    margin-bottom:20px;
+  }
+  .gallery-heading.floating-heading{
+    position:absolute;
+    top:18px;
+    left:0; right:0;
+    z-index:5;
+    color:#fff;
+    text-shadow: 0 2px 12px rgba(0,0,0,.45);
   }
   .gallery-hero{ width:100%; aspect-ratio: 3/3.6; cursor:pointer; }
   .gallery-hero img{ height:100%; object-fit:cover; }
@@ -261,8 +303,8 @@
        di dalam banner masing-masing. Ganti:
        images/banner-andri.jpg dan images/banner-alma.jpg
        ============================================================ -->
-  <section class="reveal">
-    <div class="tabs-bar">
+ <section class="couple-section reveal">
+    <div class="tabs-bar floating-tabs attention">
       <button class="tab active" data-tab="andri">Andri</button>
       <button class="tab" data-tab="alma">Alma</button>
     </div>
@@ -322,9 +364,11 @@
        CONFIG.GALLERY pada kode JavaScript di bawah.
        ============================================================ -->
   <section class="gallery-section reveal">
-    <div class="gallery-heading">Our Moments</div>
-    <div class="gallery-hero" data-lb="0">
-      <img src="images/gallery-01.jpg" alt="">
+    <div class="gallery-hero-wrap">
+      <div class="gallery-heading floating-heading">Our Moments</div>
+      <div class="gallery-hero" data-lb="0">
+        <img src="images/gallery-01.jpg" alt="">
+      </div>
     </div>
     <div class="gallery-grid" id="galleryGrid"></div>
   </section>
