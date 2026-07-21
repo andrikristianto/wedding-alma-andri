@@ -272,6 +272,9 @@
   .lb-prev{ left:4px; }
   .lb-next{ right:4px; }
   .lb-counter{ position:absolute; bottom:22px; left:0; right:0; text-align:center; color:rgba(255,255,255,.7); font-size:12px; letter-spacing:.1em; }
+  /* jarak antar section — dipakai selektif lewat class gap-b / gap-t */
+  .gap-b{ margin-bottom: 16px; }
+  .gap-t{ margin-top: 16px; }
 </style>
 </head>
 <body>
@@ -286,7 +289,8 @@
        1) HERO BANNER — judul, tanggal, nama pengantin sudah
        kamu desain di dalam gambar ini. Ganti: images/hero-banner.jpg
        ============================================================ -->
- <div class="banner-slot reveal">
+  
+ <div class="banner-slot reveal gap-b">
     <img src="images/hero-banner.jpg" alt="Akad Nikah Alma & Andri">
   </div>
 
@@ -294,7 +298,7 @@
        2) QUOTE BANNER — ayat + foto sudah jadi satu gambar
        Ganti: images/quote-banner.jpg
        ============================================================ -->
-  <div class="banner-slot reveal">
+  <div class="banner-slot reveal gap-b">
     <img src="images/quote-banner.jpg" alt="Surat Ar-Rum ayat 21">
   </div>
 
@@ -303,7 +307,7 @@
        di dalam banner masing-masing. Ganti:
        images/banner-andri.jpg dan images/banner-alma.jpg
        ============================================================ -->
- <section class="couple-section reveal">
+ <section class="couple-section reveal gap-b">
     <div class="tabs-bar floating-tabs attention">
       <button class="tab active" data-tab="andri">Andri</button>
       <button class="tab" data-tab="alma">Alma</button>
@@ -324,7 +328,7 @@
        Kalau posisi angka/tombol perlu digeser, ubah nilai "top" pada
        class .countdown-overlay di bagian <style> di atas.
        ============================================================ -->
-  <section class="countdown-section reveal">
+  <section class="countdown-section reveal gap-b  ">
     <img src="images/countdown-banner.jpg" alt="">
     <div class="countdown-overlay">
       <div class="countdown">
@@ -377,7 +381,7 @@
        7) CLOSING BANNER — ucapan terima kasih & foto sudah jadi
        satu gambar utuh. Ganti: images/closing-banner.jpg
        ============================================================ -->
-  <div class="banner-slot reveal">
+  <div class="banner-slot reveal gap-t">
     <img src="images/closing-banner.jpg" alt="Terima kasih">
   </div>
 
